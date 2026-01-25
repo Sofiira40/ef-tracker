@@ -2,7 +2,7 @@
 // STUDENT PORTAL JAVASCRIPT
 // ==========================================
 
-// Get utilities - CHANGED: use supabaseClient instead of supabase
+// Get utilities
 const { supabaseClient, generateToken, saveToLocalStorage, getFromLocalStorage, 
         formatDate, showAlert, downloadJSON, getSkillName, getScoreColor, calculateAverage } = window.EFUtils;
 
@@ -24,7 +24,7 @@ async function validateClassCode() {
         return;
     }
     
-    // Check if class session exists - CHANGED: use supabaseClient
+    // Check if class session exists
     const { data, error } = await supabaseClient
         .from('class_sessions')
         .select('id, class_name, active')
@@ -52,6 +52,7 @@ async function validateClassCode() {
     // Check if student has used this app before
     checkForExistingToken();
 }
+
 // ==========================================
 // STEP 2: TOKEN MANAGEMENT
 // ==========================================
