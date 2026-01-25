@@ -2,8 +2,8 @@
 // STUDENT PORTAL JAVASCRIPT
 // ==========================================
 
-// Get utilities
-const { supabase, generateToken, saveToLocalStorage, getFromLocalStorage, 
+// Get utilities - CHANGED: use supabaseClient instead of supabase
+const { supabaseClient, generateToken, saveToLocalStorage, getFromLocalStorage, 
         formatDate, showAlert, downloadJSON, getSkillName, getScoreColor, calculateAverage } = window.EFUtils;
 
 // Global state
@@ -24,8 +24,8 @@ async function validateClassCode() {
         return;
     }
     
-    // Check if class session exists
-    const { data, error } = await supabase
+    // Check if class session exists - CHANGED: use supabaseClient
+    const { data, error } = await supabaseClient
         .from('class_sessions')
         .select('id, class_name, active')
         .eq('class_code', classCode)
@@ -52,7 +52,6 @@ async function validateClassCode() {
     // Check if student has used this app before
     checkForExistingToken();
 }
-
 // ==========================================
 // STEP 2: TOKEN MANAGEMENT
 // ==========================================
@@ -77,7 +76,7 @@ async function createNewToken() {
     const token = generateToken();
     
     // Insert into database
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('student_tokens')
         .insert({
             session_id: currentSessionId,
@@ -129,7 +128,7 @@ async function startAssessment() {
         }
         
         // Verify token exists and belongs to this session
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('student_tokens')
             .select('id')
             .eq('token', inputToken)
@@ -146,7 +145,7 @@ async function startAssessment() {
         saveToLocalStorage('student_token', { token: inputToken, id: data.id });
         
         // Update last use date
-        await supabase
+        await supabaseClient
             .from('student_tokens')
             .update({ last_use_date: formatDate() })
             .eq('id', data.id);
@@ -186,7 +185,7 @@ document.getElementById('assessmentForm')?.addEventListener('submit', async (e) 
     };
     
     // Submit to database
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('ef_assessments')
         .insert(assessmentData)
         .select()
@@ -282,7 +281,7 @@ async function viewMyProgress() {
     document.getElementById('progressDashboard').classList.remove('hidden');
     
     // Fetch all assessments for this token
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('ef_assessments')
         .select('*')
         .eq('token_id', currentTokenId)
@@ -371,7 +370,7 @@ function hideProgress() {
 
 async function downloadMyData() {
     // Fetch all data for this token
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('ef_assessments')
         .select('*')
         .eq('token_id', currentTokenId)

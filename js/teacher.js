@@ -2,7 +2,7 @@
 // TEACHER DASHBOARD JAVASCRIPT
 // ==========================================
 
-const { supabase, generateToken, formatDate, showAlert, downloadCSV, 
+const { supabaseClient, generateToken, formatDate, showAlert, downloadCSV, 
         getSkillName, getScoreColor, calculateAverage, showLoading } = window.EFUtils;
 
 // Global state
@@ -15,7 +15,7 @@ let currentClass = null;
 
 // Check if already logged in
 async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         showDashboard();
@@ -26,7 +26,7 @@ async function login() {
     const email = document.getElementById('teacherEmail').value;
     const password = document.getElementById('teacherPassword').value;
     
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password
     });
@@ -53,7 +53,7 @@ async function signup() {
         return;
     }
     
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
         email: email,
         password: password
     });
@@ -80,7 +80,7 @@ function showLogin() {
 }
 
 async function logout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
     currentClass = null;
     document.getElementById('dashboardSection').classList.add('hidden');
@@ -100,7 +100,7 @@ async function showDashboard() {
 }
 
 async function loadClasses() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('class_sessions')
         .select('*')
         .eq('teacher_id', currentUser.id)
@@ -162,7 +162,7 @@ async function createClass() {
     // Generate unique class code
     const classCode = `${className.substring(0, 4).toUpperCase()}-${generateToken()}`;
     
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('class_sessions')
         .insert({
             teacher_id: currentUser.id,
@@ -192,7 +192,7 @@ async function selectClass(classId) {
     currentClass = classId;
     
     // Get class info
-    const { data: classData } = await supabase
+    const { data: classData } = await supabaseClient
         .from('class_sessions')
         .select('*')
         .eq('id', classId)
@@ -220,7 +220,7 @@ function backToClasses() {
 
 async function loadClassAnalytics(classId) {
     // Get all student tokens for this class
-    const { data: tokens } = await supabase
+    const { data: tokens } = await supabaseClient
         .from('student_tokens')
         .select('id, token')
         .eq('session_id', classId);
@@ -236,7 +236,7 @@ async function loadClassAnalytics(classId) {
     const tokenIds = tokens.map(t => t.id);
     
     // Get all assessments for these tokens
-    const { data: assessments } = await supabase
+    const { data: assessments } = await supabaseClient
         .from('ef_assessments')
         .select('*')
         .in('token_id', tokenIds)
@@ -432,7 +432,7 @@ async function addClassGoal() {
         return;
     }
     
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('class_goals')
         .insert({
             session_id: currentClass,
@@ -454,7 +454,7 @@ async function addClassGoal() {
 }
 
 async function loadClassGoals() {
-    const { data } = await supabase
+    const { data } = await supabaseClient
         .from('class_goals')
         .select('*')
         .eq('session_id', currentClass)
@@ -484,7 +484,7 @@ async function loadClassGoals() {
 }
 
 async function toggleGoal(goalId, achieved) {
-    await supabase
+    await supabaseClient
         .from('class_goals')
         .update({ achieved: achieved })
         .eq('id', goalId);
@@ -498,14 +498,14 @@ async function toggleGoal(goalId, achieved) {
 
 async function exportClassData() {
     // Get all tokens and assessments
-    const { data: tokens } = await supabase
+    const { data: tokens } = await supabaseClient
         .from('student_tokens')
         .select('id, token')
         .eq('session_id', currentClass);
     
     const tokenIds = tokens.map(t => t.id);
     
-    const { data: assessments } = await supabase
+    const { data: assessments } = await supabaseClient
         .from('ef_assessments')
         .select('*')
         .in('token_id', tokenIds);
