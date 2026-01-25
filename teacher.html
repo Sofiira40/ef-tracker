@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - EF Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👨‍🏫 Teacher Dashboard</h1>
+            <p class="subtitle">Monitor class trends and support student growth</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="loginSection">
+            <div class="portal-card" style="max-width: 500px; margin: 50px auto;">
+                <h2>Teacher Login</h2>
+                <p>Sign in with your email to access your class dashboards</p>
+                
+                <div class="form-group">
+                    <label for="teacherEmail">Email:</label>
+                    <input type="email" id="teacherEmail" placeholder="teacher@ocdsb.ca">
+                </div>
+                
+                <div class="form-group">
+                    <label for="teacherPassword">Password:</label>
+                    <input type="password" id="teacherPassword" placeholder="••••••••">
+                </div>
+                
+                <button class="btn btn-primary" onclick="login()">Login</button>
+                <button class="btn btn-outline" onclick="showSignup()">Create Account</button>
+                
+                <div id="loginError" class="alert alert-danger hidden"></div>
+            </div>
+        </div>
+
+        <!-- Signup Section -->
+        <div id="signupSection" class="hidden">
+            <div class="portal-card" style="max-width: 500px; margin: 50px auto;">
+                <h2>Create Teacher Account</h2>
+                
+                <div class="form-group">
+                    <label for="signupEmail">Email:</label>
+                    <input type="email" id="signupEmail" placeholder="teacher@ocdsb.ca">
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">Password:</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••">
+                </div>
+                
+                <button class="btn btn-primary" onclick="signup()">Create Account</button>
+                <button class="btn btn-outline" onclick="showLogin()">Back to Login</button>
+                
+                <div id="signupError" class="alert alert-danger hidden"></div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboardSection" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2>My Classes</h2>
+                <div>
+                    <button class="btn btn-primary" onclick="showCreateClassModal()">+ New Class</button>
+                    <button class="btn btn-outline" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Class List -->
+            <div id="classList" class="dashboard-grid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Selected Class View -->
+            <div id="classView" class="hidden">
+                <button class="btn btn-outline" onclick="backToClasses()">← Back to My Classes</button>
+                
+                <div class="chart-container">
+                    <h3 id="className">Class Name</h3>
+                    <p id="classInfo">Class Code: <strong id="classCode"></strong> | Students: <span id="studentCount">0</span></p>
+                </div>
+
+                <!-- Class Stats -->
+                <div class="dashboard-grid" id="classStats">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Skills Overview Chart -->
+                <div class="chart-container">
+                    <h3>Class Skills Overview</h3>
+                    <canvas id="classSkillsChart"></canvas>
+                </div>
+
+                <!-- Individual Student Progress -->
+                <div class="chart-container">
+                    <h3>Individual Student Trends</h3>
+                    <canvas id="studentTrendsChart"></canvas>
+                </div>
+
+                <!-- Recent Assessments Table -->
+                <div class="chart-container">
+                    <h3>Recent Student Reflections</h3>
+                    <table class="data-table" id="reflectionsTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Date</th>
+                                <th>What Went Well</th>
+                                <th>Challenges</th>
+                                <th>Support Needed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Class Goals -->
+                <div class="chart-container">
+                    <h3>Class Goals</h3>
+                    <button class="btn btn-secondary" onclick="showAddGoalModal()">+ Add Class Goal</button>
+                    <div id="classGoalsList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="chart-container">
+                    <h3>Export Data</h3>
+                    <button class="btn btn-accent" onclick="exportClassData()">Download Class Report (CSV)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Class Modal -->
+    <div id="createClassModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Class</h2>
+                <button class="modal-close" onclick="closeCreateClassModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="newClassName">Class Name:</label>
+                <input type="text" id="newClassName" placeholder="Period 1 Math">
+            </div>
+            
+            <div class="form-group">
+                <label for="newClassGrade">Grade Level:</label>
+                <select id="newClassGrade">
+                    <option value="">Select grade...</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="createClass()">Create Class</button>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div id="addGoalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Class Goal</h2>
+                <button class="modal-close" onclick="closeAddGoalModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="goalText">Goal:</label>
+                <textarea id="goalText" placeholder="What do we want to achieve as a class?"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="goalSkill">Focus Skill:</label>
+                <select id="goalSkill">
+                    <option value="">All skills</option>
+                    <option value="task_initiation">Task Initiation</option>
+                    <option value="working_memory">Working Memory</option>
+                    <option value="planning">Planning</option>
+                    <option value="organization">Organization</option>
+                    <option value="time_management">Time Management</option>
+                    <option value="self_monitoring">Self-Monitoring</option>
+                    <option value="emotional_regulation">Emotional Regulation</option>
+                    <option value="flexibility">Flexibility</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="goalDate">Target Date:</label>
+                <input type="date" id="goalDate">
+            </div>
+            
+            <button class="btn btn-primary" onclick="addClassGoal()">Add Goal</button>
+        </div>
+    </div>
+
+    <!-- Load Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/teacher.js"></script>
+</body>
+</html>

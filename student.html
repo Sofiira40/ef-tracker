@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Assessment - EF Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Student Self-Assessment</h1>
+            <p class="subtitle">Reflect on your executive functioning skills</p>
+            <a href="index.html" class="btn btn-outline" style="max-width: 200px; margin: 10px auto;">← Back to Home</a>
+        </header>
+
+        <!-- Step 1: Get Class Code -->
+        <div id="step-classCode" class="assessment-step">
+            <h2>Step 1: Enter Your Class Code</h2>
+            <p>Your teacher will give you a class code (e.g., MATH-A7B2)</p>
+            
+            <div class="form-group">
+                <label for="classCodeInput">Class Code:</label>
+                <input type="text" id="classCodeInput" placeholder="MATH-A7B2" style="text-transform: uppercase;">
+            </div>
+            
+            <button class="btn btn-primary" onclick="validateClassCode()">Continue</button>
+            
+            <div id="classCodeError" class="alert alert-danger hidden">
+                Invalid class code. Please check with your teacher.
+            </div>
+        </div>
+
+        <!-- Step 2: Get or Create Student Token -->
+        <div id="step-token" class="assessment-step hidden">
+            <h2>Step 2: Your Anonymous ID</h2>
+            
+            <div id="newTokenSection">
+                <p>This is your first time! We've created a unique ID for you:</p>
+                <div class="token-display">
+                    <div class="token-label">Your Anonymous ID:</div>
+                    <div class="token-value" id="displayToken">####</div>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">
+                        📝 Write this down! You'll need it to see your progress later.
+                    </p>
+                </div>
+            </div>
+            
+            <div id="returningTokenSection" class="hidden">
+                <p>Welcome back! Enter your anonymous ID to continue:</p>
+                <div class="form-group">
+                    <label for="returningToken">Your ID:</label>
+                    <input type="text" id="returningToken" placeholder="AB12">
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn btn-primary" onclick="startAssessment()">Start Assessment</button>
+                <button class="btn btn-outline" onclick="toggleReturningStudent()">I have an ID from before</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Assessment Form -->
+        <div id="step-assessment" class="assessment-step hidden">
+            <form id="assessmentForm">
+                <h2>Executive Functioning Skills Self-Assessment</h2>
+                <p style="color: var(--text-light); margin-bottom: 30px;">
+                    Rate how you've been doing with each skill this week (1 = struggling, 5 = doing great)
+                </p>
+
+                <!-- Task Initiation -->
+                <div class="scale-group">
+                    <div class="scale-question">1. Task Initiation: Starting tasks without procrastinating</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="task_initiation" id="ti1" value="1" required>
+                            <label for="ti1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="task_initiation" id="ti2" value="2">
+                            <label for="ti2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="task_initiation" id="ti3" value="3">
+                            <label for="ti3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="task_initiation" id="ti4" value="4">
+                            <label for="ti4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="task_initiation" id="ti5" value="5">
+                            <label for="ti5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Working Memory -->
+                <div class="scale-group">
+                    <div class="scale-question">2. Working Memory: Remembering instructions and information</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="working_memory" id="wm1" value="1" required>
+                            <label for="wm1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="working_memory" id="wm2" value="2">
+                            <label for="wm2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="working_memory" id="wm3" value="3">
+                            <label for="wm3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="working_memory" id="wm4" value="4">
+                            <label for="wm4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="working_memory" id="wm5" value="5">
+                            <label for="wm5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Planning -->
+                <div class="scale-group">
+                    <div class="scale-question">3. Planning: Breaking tasks into steps and making plans</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="planning" id="pl1" value="1" required>
+                            <label for="pl1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="planning" id="pl2" value="2">
+                            <label for="pl2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="planning" id="pl3" value="3">
+                            <label for="pl3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="planning" id="pl4" value="4">
+                            <label for="pl4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="planning" id="pl5" value="5">
+                            <label for="pl5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Organization -->
+                <div class="scale-group">
+                    <div class="scale-question">4. Organization: Keeping materials and workspace organized</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="organization" id="org1" value="1" required>
+                            <label for="org1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="organization" id="org2" value="2">
+                            <label for="org2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="organization" id="org3" value="3">
+                            <label for="org3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="organization" id="org4" value="4">
+                            <label for="org4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="organization" id="org5" value="5">
+                            <label for="org5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Time Management -->
+                <div class="scale-group">
+                    <div class="scale-question">5. Time Management: Estimating time and meeting deadlines</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="time_management" id="tm1" value="1" required>
+                            <label for="tm1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="time_management" id="tm2" value="2">
+                            <label for="tm2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="time_management" id="tm3" value="3">
+                            <label for="tm3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="time_management" id="tm4" value="4">
+                            <label for="tm4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="time_management" id="tm5" value="5">
+                            <label for="tm5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Self-Monitoring -->
+                <div class="scale-group">
+                    <div class="scale-question">6. Self-Monitoring: Checking your own work and progress</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="self_monitoring" id="sm1" value="1" required>
+                            <label for="sm1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="self_monitoring" id="sm2" value="2">
+                            <label for="sm2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="self_monitoring" id="sm3" value="3">
+                            <label for="sm3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="self_monitoring" id="sm4" value="4">
+                            <label for="sm4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="self_monitoring" id="sm5" value="5">
+                            <label for="sm5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Emotional Regulation -->
+                <div class="scale-group">
+                    <div class="scale-question">7. Emotional Regulation: Managing frustration and emotions</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="emotional_regulation" id="er1" value="1" required>
+                            <label for="er1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="emotional_regulation" id="er2" value="2">
+                            <label for="er2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="emotional_regulation" id="er3" value="3">
+                            <label for="er3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="emotional_regulation" id="er4" value="4">
+                            <label for="er4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="emotional_regulation" id="er5" value="5">
+                            <label for="er5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Flexibility -->
+                <div class="scale-group">
+                    <div class="scale-question">8. Flexibility: Adapting when plans change</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="flexibility" id="flex1" value="1" required>
+                            <label for="flex1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="flexibility" id="flex2" value="2">
+                            <label for="flex2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="flexibility" id="flex3" value="3">
+                            <label for="flex3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="flexibility" id="flex4" value="4">
+                            <label for="flex4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="flexibility" id="flex5" value="5">
+                            <label for="flex5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Really struggling</span>
+                        <span>Doing great!</span>
+                    </div>
+                </div>
+
+                <!-- Reflection Questions -->
+                <h3 style="margin-top: 40px;">Reflection Questions</h3>
+                
+                <div class="form-group">
+                    <label for="what_went_well">What went well this week?</label>
+                    <textarea id="what_went_well" name="what_went_well" placeholder="Think about moments you're proud of..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="what_was_challenging">What was challenging this week?</label>
+                    <textarea id="what_was_challenging" name="what_was_challenging" placeholder="It's okay to share struggles..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="support_needed">What support would help you?</label>
+                    <textarea id="support_needed" name="support_needed" placeholder="What could make things easier?"></textarea>
+                </div>
+
+                <!-- Goal Setting -->
+                <h3 style="margin-top: 40px;">This Week's Goal</h3>
+                
+                <div class="form-group">
+                    <label for="weekly_goal">What's one thing you want to work on this week?</label>
+                    <textarea id="weekly_goal" name="weekly_goal" placeholder="Set a small, achievable goal..."></textarea>
+                </div>
+
+                <div class="scale-group">
+                    <div class="scale-question">How did you do on last week's goal? (Skip if this is your first time)</div>
+                    <div class="scale-options">
+                        <div class="scale-option">
+                            <input type="radio" name="goal_progress" id="gp1" value="1">
+                            <label for="gp1">1</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="goal_progress" id="gp2" value="2">
+                            <label for="gp2">2</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="goal_progress" id="gp3" value="3">
+                            <label for="gp3">3</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="goal_progress" id="gp4" value="4">
+                            <label for="gp4">4</label>
+                        </div>
+                        <div class="scale-option">
+                            <input type="radio" name="goal_progress" id="gp5" value="5">
+                            <label for="gp5">5</label>
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Didn't work on it</span>
+                        <span>Crushed it!</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 30px;">Submit Assessment</button>
+            </form>
+        </div>
+
+        <!-- Step 4: Confirmation & Progress View -->
+        <div id="step-complete" class="assessment-step hidden">
+            <div class="alert alert-success">
+                <span style="font-size: 2rem;">🎉</span>
+                <div>
+                    <strong>Assessment Complete!</strong>
+                    <p>Great job reflecting on your skills. Keep up the awesome work!</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" id="skillsSummary">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="btn btn-primary" onclick="viewMyProgress()">View My Progress Over Time</button>
+                <button class="btn btn-secondary" onclick="downloadMyData()">Download My Data</button>
+                <button class="btn btn-outline" onclick="window.location.reload()">Take Another Assessment</button>
+            </div>
+        </div>
+
+        <!-- Progress Dashboard (for returning students) -->
+        <div id="progressDashboard" class="hidden">
+            <h2>Your Progress Journey 📈</h2>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+            <button class="btn btn-outline" onclick="hideProgress()">Back to Assessment</button>
+        </div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <!-- Load our scripts -->
+    <script src="js/shared.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>
