@@ -2,9 +2,6 @@
 // TEACHER DASHBOARD JAVASCRIPT
 // ==========================================
 
-const { supabaseClient, generateToken, formatDate, showAlert, downloadCSV, 
-        getSkillName, getScoreColor, calculateAverage, showLoading } = window.EFUtils;
-
 // Global state
 let currentUser = null;
 let currentClass = null;
@@ -15,7 +12,7 @@ let currentClass = null;
 
 // Check if already logged in
 async function checkAuth() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    const { data: { session } } = await window.EFUtils.supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         showDashboard();
@@ -26,7 +23,7 @@ async function login() {
     const email = document.getElementById('teacherEmail').value;
     const password = document.getElementById('teacherPassword').value;
     
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
+    const { data, error } = await window.EFUtils.supabaseClient.auth.signInWithPassword({
         email: email,
         password: password
     });
@@ -53,7 +50,7 @@ async function signup() {
         return;
     }
     
-    const { data, error } = await supabaseClient.auth.signUp({
+    const { data, error } = await window.EFUtils.supabaseClient.auth.signUp({
         email: email,
         password: password
     });
@@ -65,7 +62,7 @@ async function signup() {
         return;
     }
     
-    showAlert('Account created! Please check your email to confirm.', 'success');
+    window.EFUtils.showAlert('Account created! Please check your email to confirm.', 'success');
     showLogin();
 }
 
@@ -80,7 +77,7 @@ function showLogin() {
 }
 
 async function logout() {
-    await supabaseClient.auth.signOut();
+    await window.EFUtils.supabaseClient.auth.signOut();
     currentUser = null;
     currentClass = null;
     document.getElementById('dashboardSection').classList.add('hidden');
@@ -100,7 +97,7 @@ async function showDashboard() {
 }
 
 async function loadClasses() {
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('class_sessions')
         .select('*')
         .eq('teacher_id', currentUser.id)
@@ -108,7 +105,7 @@ async function loadClasses() {
     
     if (error) {
         console.error('Error loading classes:', error);
-        showAlert('Error loading your classes', 'danger');
+        window.EFUtils.showAlert('Error loading your classes', 'danger');
         return;
     }
     
@@ -155,14 +152,14 @@ async function createClass() {
     const gradeLevel = document.getElementById('newClassGrade').value;
     
     if (!className) {
-        showAlert('Please enter a class name', 'danger');
+        window.EFUtils.showAlert('Please enter a class name', 'danger');
         return;
     }
     
     // Generate unique class code
-    const classCode = `${className.substring(0, 4).toUpperCase()}-${generateToken()}`;
+    const classCode = `${className.substring(0, 4).toUpperCase()}-${window.EFUtils.generateToken()}`;
     
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('class_sessions')
         .insert({
             teacher_id: currentUser.id,
@@ -175,11 +172,11 @@ async function createClass() {
     
     if (error) {
         console.error('Error creating class:', error);
-        showAlert('Error creating class. Please try again.', 'danger');
+        window.EFUtils.showAlert('Error creating class. Please try again.', 'danger');
         return;
     }
     
-    showAlert(`Class created! Share code "${classCode}" with your students.`, 'success');
+    window.EFUtils.showAlert(`Class created! Share code "${classCode}" with your students.`, 'success');
     closeCreateClassModal();
     loadClasses();
 }
@@ -192,7 +189,7 @@ async function selectClass(classId) {
     currentClass = classId;
     
     // Get class info
-    const { data: classData } = await supabaseClient
+    const { data: classData } = await window.EFUtils.supabaseClient
         .from('class_sessions')
         .select('*')
         .eq('id', classId)
@@ -220,14 +217,14 @@ function backToClasses() {
 
 async function loadClassAnalytics(classId) {
     // Get all student tokens for this class
-    const { data: tokens } = await supabaseClient
+    const { data: tokens } = await window.EFUtils.supabaseClient
         .from('student_tokens')
         .select('id, token')
         .eq('session_id', classId);
     
     if (!tokens || tokens.length === 0) {
         document.getElementById('studentCount').textContent = '0';
-        showAlert('No student data yet for this class', 'info');
+        window.EFUtils.showAlert('No student data yet for this class', 'info');
         return;
     }
     
@@ -236,14 +233,14 @@ async function loadClassAnalytics(classId) {
     const tokenIds = tokens.map(t => t.id);
     
     // Get all assessments for these tokens
-    const { data: assessments } = await supabaseClient
+    const { data: assessments } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .select('*')
         .in('token_id', tokenIds)
         .order('assessment_date', { ascending: true });
     
     if (!assessments || assessments.length === 0) {
-        showAlert('No assessments completed yet', 'info');
+        window.EFUtils.showAlert('No assessments completed yet', 'info');
         return;
     }
     
@@ -271,7 +268,7 @@ function displayClassStats(assessments) {
         });
     });
     
-    const classAvg = calculateAverage(allScores);
+    const classAvg = window.EFUtils.calculateAverage(allScores);
     
     // Find most improved skill
     const firstWeek = assessments.slice(0, Math.min(5, assessments.length));
@@ -281,20 +278,20 @@ function displayClassStats(assessments) {
     let mostImprovedSkill = '';
     
     skills.forEach(skill => {
-        const firstAvg = calculateAverage(firstWeek.map(a => a[skill]));
-        const lastAvg = calculateAverage(lastWeek.map(a => a[skill]));
+        const firstAvg = window.EFUtils.calculateAverage(firstWeek.map(a => a[skill]));
+        const lastAvg = window.EFUtils.calculateAverage(lastWeek.map(a => a[skill]));
         const improvement = lastAvg - firstAvg;
         
         if (improvement > maxImprovement) {
             maxImprovement = improvement;
-            mostImprovedSkill = getSkillName(skill);
+            mostImprovedSkill = window.EFUtils.getSkillName(skill);
         }
     });
     
     const statsHTML = `
         <div class="stat-card">
             <div class="stat-label">Class Average</div>
-            <div class="stat-value" style="color: ${getScoreColor(classAvg)}">${classAvg}</div>
+            <div class="stat-value" style="color: ${window.EFUtils.getScoreColor(classAvg)}">${classAvg}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Assessments</div>
@@ -321,18 +318,18 @@ function displayClassSkillsChart(assessments) {
     
     const averages = skills.map(skill => {
         const scores = assessments.map(a => a[skill]).filter(s => s);
-        return calculateAverage(scores);
+        return window.EFUtils.calculateAverage(scores);
     });
     
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: skills.map(s => getSkillName(s)),
+            labels: skills.map(s => window.EFUtils.getSkillName(s)),
             datasets: [{
                 label: 'Class Average',
                 data: averages,
-                backgroundColor: averages.map(score => getScoreColor(score) + '80'),
-                borderColor: averages.map(score => getScoreColor(score)),
+                backgroundColor: averages.map(score => window.EFUtils.getScoreColor(score) + '80'),
+                borderColor: averages.map(score => window.EFUtils.getScoreColor(score)),
                 borderWidth: 2
             }]
         },
@@ -358,7 +355,7 @@ function displayStudentTrends(assessments, tokens) {
             const skills = ['task_initiation', 'working_memory', 'planning', 'organization',
                             'time_management', 'self_monitoring', 'emotional_regulation', 'flexibility'];
             const scores = skills.map(skill => a[skill]);
-            return parseFloat(calculateAverage(scores));
+            return parseFloat(window.EFUtils.calculateAverage(scores));
         });
         
         const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
@@ -428,11 +425,11 @@ async function addClassGoal() {
     const targetDate = document.getElementById('goalDate').value;
     
     if (!goalText) {
-        showAlert('Please enter a goal', 'danger');
+        window.EFUtils.showAlert('Please enter a goal', 'danger');
         return;
     }
     
-    const { error } = await supabaseClient
+    const { error } = await window.EFUtils.supabaseClient
         .from('class_goals')
         .insert({
             session_id: currentClass,
@@ -444,17 +441,17 @@ async function addClassGoal() {
     
     if (error) {
         console.error('Error adding goal:', error);
-        showAlert('Error adding goal', 'danger');
+        window.EFUtils.showAlert('Error adding goal', 'danger');
         return;
     }
     
-    showAlert('Goal added!', 'success');
+    window.EFUtils.showAlert('Goal added!', 'success');
     closeAddGoalModal();
     loadClassGoals();
 }
 
 async function loadClassGoals() {
-    const { data } = await supabaseClient
+    const { data } = await window.EFUtils.supabaseClient
         .from('class_goals')
         .select('*')
         .eq('session_id', currentClass)
@@ -471,7 +468,7 @@ async function loadClassGoals() {
         <div class="alert ${goal.achieved ? 'alert-success' : 'alert-info'}" style="margin-top: 15px;">
             <div>
                 <strong>${goal.goal_text}</strong>
-                ${goal.focus_skill ? `<p style="margin: 5px 0;">Focus: ${getSkillName(goal.focus_skill)}</p>` : ''}
+                ${goal.focus_skill ? `<p style="margin: 5px 0;">Focus: ${window.EFUtils.getSkillName(goal.focus_skill)}</p>` : ''}
                 ${goal.target_date ? `<p style="margin: 5px 0;">Target: ${new Date(goal.target_date).toLocaleDateString()}</p>` : ''}
             </div>
             <button class="btn ${goal.achieved ? 'btn-outline' : 'btn-secondary'}" 
@@ -484,7 +481,7 @@ async function loadClassGoals() {
 }
 
 async function toggleGoal(goalId, achieved) {
-    await supabaseClient
+    await window.EFUtils.supabaseClient
         .from('class_goals')
         .update({ achieved: achieved })
         .eq('id', goalId);
@@ -498,14 +495,14 @@ async function toggleGoal(goalId, achieved) {
 
 async function exportClassData() {
     // Get all tokens and assessments
-    const { data: tokens } = await supabaseClient
+    const { data: tokens } = await window.EFUtils.supabaseClient
         .from('student_tokens')
         .select('id, token')
         .eq('session_id', currentClass);
     
     const tokenIds = tokens.map(t => t.id);
     
-    const { data: assessments } = await supabaseClient
+    const { data: assessments } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .select('*')
         .in('token_id', tokenIds);
@@ -533,8 +530,8 @@ async function exportClassData() {
     });
     
     const headers = Object.keys(csvData[0]);
-    downloadCSV(csvData, 'Class-Report', headers);
-    showAlert('Class report downloaded!', 'success');
+    window.EFUtils.downloadCSV(csvData, 'Class-Report', headers);
+    window.EFUtils.showAlert('Class report downloaded!', 'success');
 }
 
 // Initialize on page load

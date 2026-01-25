@@ -2,10 +2,6 @@
 // STUDENT PORTAL JAVASCRIPT
 // ==========================================
 
-// Get utilities
-const { supabaseClient, generateToken, saveToLocalStorage, getFromLocalStorage, 
-        formatDate, showAlert, downloadJSON, getSkillName, getScoreColor, calculateAverage } = window.EFUtils;
-
 // Global state
 let currentSessionId = null;
 let currentToken = null;
@@ -20,12 +16,12 @@ async function validateClassCode() {
     const classCode = classCodeInput.value.trim().toUpperCase();
     
     if (!classCode) {
-        showAlert('Please enter a class code', 'danger');
+        window.EFUtils.showAlert('Please enter a class code', 'danger');
         return;
     }
     
     // Check if class session exists
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('class_sessions')
         .select('id, class_name, active')
         .eq('class_code', classCode)
@@ -37,13 +33,13 @@ async function validateClassCode() {
     }
     
     if (!data.active) {
-        showAlert('This class session is no longer active. Please check with your teacher.', 'warning');
+        window.EFUtils.showAlert('This class session is no longer active. Please check with your teacher.', 'warning');
         return;
     }
     
     // Save session info
     currentSessionId = data.id;
-    saveToLocalStorage('current_session', { id: data.id, code: classCode, name: data.class_name });
+    window.EFUtils.saveToLocalStorage('current_session', { id: data.id, code: classCode, name: data.class_name });
     
     // Move to token step
     document.getElementById('step-classCode').classList.add('hidden');
@@ -58,7 +54,7 @@ async function validateClassCode() {
 // ==========================================
 
 async function checkForExistingToken() {
-    const savedToken = getFromLocalStorage('student_token');
+    const savedToken = window.EFUtils.getFromLocalStorage('student_token');
     
     if (savedToken && savedToken.token) {
         // Student has been here before
@@ -74,29 +70,29 @@ async function checkForExistingToken() {
 }
 
 async function createNewToken() {
-    const token = generateToken();
+    const token = window.EFUtils.generateToken();
     
     // Insert into database
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('student_tokens')
         .insert({
             session_id: currentSessionId,
             token: token,
-            first_use_date: formatDate()
+            first_use_date: window.EFUtils.formatDate()
         })
         .select()
         .single();
     
     if (error) {
         console.error('Error creating token:', error);
-        showAlert('Error creating your ID. Please try again.', 'danger');
+        window.EFUtils.showAlert('Error creating your ID. Please try again.', 'danger');
         return;
     }
     
     // Save token
     currentToken = token;
     currentTokenId = data.id;
-    saveToLocalStorage('student_token', { token: token, id: data.id });
+    window.EFUtils.saveToLocalStorage('student_token', { token: token, id: data.id });
     
     // Display token
     document.getElementById('displayToken').textContent = token;
@@ -124,12 +120,12 @@ async function startAssessment() {
         const inputToken = document.getElementById('returningToken').value.trim().toUpperCase();
         
         if (!inputToken) {
-            showAlert('Please enter your anonymous ID', 'danger');
+            window.EFUtils.showAlert('Please enter your anonymous ID', 'danger');
             return;
         }
         
         // Verify token exists and belongs to this session
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.EFUtils.supabaseClient
             .from('student_tokens')
             .select('id')
             .eq('token', inputToken)
@@ -137,18 +133,18 @@ async function startAssessment() {
             .single();
         
         if (error || !data) {
-            showAlert('Invalid ID for this class. Please check your ID or create a new one.', 'danger');
+            window.EFUtils.showAlert('Invalid ID for this class. Please check your ID or create a new one.', 'danger');
             return;
         }
         
         currentToken = inputToken;
         currentTokenId = data.id;
-        saveToLocalStorage('student_token', { token: inputToken, id: data.id });
+        window.EFUtils.saveToLocalStorage('student_token', { token: inputToken, id: data.id });
         
         // Update last use date
-        await supabaseClient
+        await window.EFUtils.supabaseClient
             .from('student_tokens')
-            .update({ last_use_date: formatDate() })
+            .update({ last_use_date: window.EFUtils.formatDate() })
             .eq('id', data.id);
     }
     
@@ -169,7 +165,7 @@ document.getElementById('assessmentForm')?.addEventListener('submit', async (e) 
     // Collect all scores
     const assessmentData = {
         token_id: currentTokenId,
-        assessment_date: formatDate(),
+        assessment_date: window.EFUtils.formatDate(),
         task_initiation: parseInt(formData.get('task_initiation')),
         working_memory: parseInt(formData.get('working_memory')),
         planning: parseInt(formData.get('planning')),
@@ -186,7 +182,7 @@ document.getElementById('assessmentForm')?.addEventListener('submit', async (e) 
     };
     
     // Submit to database
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .insert(assessmentData)
         .select()
@@ -194,14 +190,14 @@ document.getElementById('assessmentForm')?.addEventListener('submit', async (e) 
     
     if (error) {
         console.error('Error submitting assessment:', error);
-        showAlert('Error submitting your assessment. Please try again.', 'danger');
+        window.EFUtils.showAlert('Error submitting your assessment. Please try again.', 'danger');
         return;
     }
     
     // Save to localStorage for offline access
-    let localAssessments = getFromLocalStorage('my_assessments') || [];
+    let localAssessments = window.EFUtils.getFromLocalStorage('my_assessments') || [];
     localAssessments.push(assessmentData);
-    saveToLocalStorage('my_assessments', localAssessments);
+    window.EFUtils.saveToLocalStorage('my_assessments', localAssessments);
     
     // Show completion screen
     showCompletionScreen(assessmentData);
@@ -220,13 +216,13 @@ function showCompletionScreen(data) {
                     'time_management', 'self_monitoring', 'emotional_regulation', 'flexibility'];
     
     const scores = skills.map(skill => data[skill]);
-    const avgScore = calculateAverage(scores);
+    const avgScore = window.EFUtils.calculateAverage(scores);
     
     // Create summary cards
     const summaryHTML = `
         <div class="stat-card">
             <div class="stat-label">Overall Average</div>
-            <div class="stat-value" style="color: ${getScoreColor(avgScore)}">${avgScore}</div>
+            <div class="stat-value" style="color: ${window.EFUtils.getScoreColor(avgScore)}">${avgScore}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Strongest Skill</div>
@@ -238,7 +234,7 @@ function showCompletionScreen(data) {
         </div>
         <div class="stat-card">
             <div class="stat-label">Assessments Completed</div>
-            <div class="stat-value">${(getFromLocalStorage('my_assessments') || []).length}</div>
+            <div class="stat-value">${(window.EFUtils.getFromLocalStorage('my_assessments') || []).length}</div>
         </div>
     `;
     
@@ -252,7 +248,7 @@ function getStrongestSkill(data, skills) {
     skills.forEach(skill => {
         if (data[skill] > maxScore) {
             maxScore = data[skill];
-            strongestSkill = getSkillName(skill);
+            strongestSkill = window.EFUtils.getSkillName(skill);
         }
     });
     
@@ -266,7 +262,7 @@ function getWeakestSkill(data, skills) {
     skills.forEach(skill => {
         if (data[skill] < minScore) {
             minScore = data[skill];
-            weakestSkill = getSkillName(skill);
+            weakestSkill = window.EFUtils.getSkillName(skill);
         }
     });
     
@@ -282,7 +278,7 @@ async function viewMyProgress() {
     document.getElementById('progressDashboard').classList.remove('hidden');
     
     // Fetch all assessments for this token
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .select('*')
         .eq('token_id', currentTokenId)
@@ -290,12 +286,12 @@ async function viewMyProgress() {
     
     if (error) {
         console.error('Error fetching progress:', error);
-        showAlert('Error loading your progress. Please try again.', 'danger');
+        window.EFUtils.showAlert('Error loading your progress. Please try again.', 'danger');
         return;
     }
     
     if (!data || data.length === 0) {
-        showAlert('No assessment history found yet. Complete more assessments to see your progress!', 'info');
+        window.EFUtils.showAlert('No assessment history found yet. Complete more assessments to see your progress!', 'info');
         return;
     }
     
@@ -314,7 +310,7 @@ function createProgressChart(assessments) {
     const datasets = skills.map((skill, index) => {
         const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
         return {
-            label: getSkillName(skill),
+            label: window.EFUtils.getSkillName(skill),
             data: assessments.map(a => a[skill]),
             borderColor: colors[index],
             backgroundColor: colors[index] + '20',
@@ -371,7 +367,7 @@ function hideProgress() {
 
 async function downloadMyData() {
     // Fetch all data for this token
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .select('*')
         .eq('token_id', currentTokenId)
@@ -379,7 +375,7 @@ async function downloadMyData() {
     
     if (error) {
         console.error('Error fetching data:', error);
-        showAlert('Error downloading your data. Please try again.', 'danger');
+        window.EFUtils.showAlert('Error downloading your data. Please try again.', 'danger');
         return;
     }
     
@@ -392,6 +388,6 @@ async function downloadMyData() {
         assessments: data
     };
     
-    downloadJSON(exportData, `EF-Progress-${currentToken}`);
-    showAlert('Your data has been downloaded! Keep it safe.', 'success');
+    window.EFUtils.downloadJSON(exportData, `EF-Progress-${currentToken}`);
+    window.EFUtils.showAlert('Your data has been downloaded! Keep it safe.', 'success');
 }
