@@ -14,6 +14,12 @@ let studentTrendsChart = null;
 
 // Check if already logged in
 async function checkAuth() {
+    // Handle auth callback from email confirmation
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    if (hashParams.get('access_token')) {
+        console.log('Processing auth token from email confirmation...');
+    }
+    
     const { data: { session } } = await window.EFUtils.supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
