@@ -599,3 +599,16 @@ async function downloadMyData() {
     window.EFUtils.downloadJSON(exportData, `EF-Progress-${currentToken}`);
     window.EFUtils.showAlert('Your data has been downloaded! Keep it safe.', 'success');
 }
+
+// ==========================================
+// MAKE FUNCTIONS GLOBALLY ACCESSIBLE
+// ==========================================
+window.validateClassCode = validateClassCode;
+window.toggleReturningStudent = toggleReturningStudent;
+window.startAssessment = startAssessment;
+window.shareWithTeacher = shareWithTeacher;
+window.copyTokenToClipboard = copyTokenToClipboard;
+window.addSentenceStarter = addSentenceStarter;
+window.viewMyProgress = viewMyProgress;
+window.hideProgress = hideProgress;
+window.downloadMyData = downloadMyData;

@@ -105,9 +105,14 @@ async function logout() {
 // ==========================================
 
 async function showDashboard() {
-    document.getElementById('loginSection').classList.add('hidden');
-    document.getElementById('signupSection').classList.add('hidden');
-    document.getElementById('dashboardSection').classList.remove('hidden');
+    // Hide login/signup sections
+    const loginSection = document.getElementById('loginSection');
+    const signupSection = document.getElementById('signupSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    
+    if (loginSection) loginSection.classList.add('hidden');
+    if (signupSection) signupSection.classList.add('hidden');
+    if (dashboardSection) dashboardSection.classList.remove('hidden');
     
     loadClasses();
 }
@@ -139,16 +144,17 @@ async function loadClasses() {
     }
     
     classList.innerHTML = data.map(cls => `
-        <div class="portal-card" onclick="selectClass('${cls.id}')" style="cursor: pointer;">
-            <h3>${cls.class_name}</h3>
-            <p>Code: <strong>${cls.class_code}</strong></p>
-            <p>Grade ${cls.grade_level || 'N/A'}</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">
-                Created: ${new Date(cls.created_date).toLocaleDateString()}
-            </p>
-            <span class="btn btn-outline" style="pointer-events: none;">View Dashboard</span>
-        </div>
-    `).join('');
+    <div class="portal-card">
+        <h3>${cls.class_name}</h3>
+        <p>Code: <strong id="code-${cls.id}">${cls.class_code}</strong></p>
+        <button class="btn btn-outline" style="margin: 5px 0;" onclick="copyClassCode('${cls.class_code}', event)">📋 Copy Code</button>
+        <p>Grade ${cls.grade_level || 'N/A'}</p>
+        <p style="color: var(--text-light); font-size: 0.9rem;">
+            Created: ${new Date(cls.created_date).toLocaleDateString()}
+        </p>
+        <button class="btn btn-primary" onclick="selectClass('${cls.id}')">View Dashboard</button>
+    </div>
+`).join('');
 }
 
 // ==========================================
