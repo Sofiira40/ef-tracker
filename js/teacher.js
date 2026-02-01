@@ -132,6 +132,12 @@ async function loadClasses() {
     
     const classList = document.getElementById('classList');
     
+    // Check if element exists
+    if (!classList) {
+        console.error('classList element not found');
+        return;
+    }
+    
     if (!data || data.length === 0) {
         classList.innerHTML = `
             <div class="portal-card" style="grid-column: 1 / -1; text-align: center;">
@@ -144,17 +150,17 @@ async function loadClasses() {
     }
     
     classList.innerHTML = data.map(cls => `
-    <div class="portal-card">
-        <h3>${cls.class_name}</h3>
-        <p>Code: <strong id="code-${cls.id}">${cls.class_code}</strong></p>
-        <button class="btn btn-outline" style="margin: 5px 0;" onclick="copyClassCode('${cls.class_code}', event)">📋 Copy Code</button>
-        <p>Grade ${cls.grade_level || 'N/A'}</p>
-        <p style="color: var(--text-light); font-size: 0.9rem;">
-            Created: ${new Date(cls.created_date).toLocaleDateString()}
-        </p>
-        <button class="btn btn-primary" onclick="selectClass('${cls.id}')">View Dashboard</button>
-    </div>
-`).join('');
+        <div class="portal-card">
+            <h3>${cls.class_name}</h3>
+            <p>Code: <strong>${cls.class_code}</strong></p>
+            <button class="btn btn-outline" style="margin: 5px 0;" onclick="copyClassCode('${cls.class_code}', event)">📋 Copy Code</button>
+            <p>Grade ${cls.grade_level || 'N/A'}</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">
+                Created: ${new Date(cls.created_date).toLocaleDateString()}
+            </p>
+            <button class="btn btn-primary" onclick="selectClass('${cls.id}')">View Dashboard</button>
+        </div>
+    `).join('');
 }
 
 // ==========================================
@@ -610,6 +616,66 @@ async function exportClassData() {
     window.EFUtils.downloadCSV(csvData, 'Class-Report', headers);
     window.EFUtils.showAlert('Class report downloaded!', 'success');
 }
+
+// ==========================================
+// COPY CLASS CODE
+// ==========================================
+
+function copyClassCode(code, event) {
+    // Prevent card click from firing
+    event.stopPropagation();
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+            window.EFUtils.showAlert(`Class code "${code}" copied to clipboard!`, 'success');
+        }).catch(() => {
+            fallbackCopyCode(code);
+        });
+    } else {
+        fallbackCopyCode(code);
+    }
+}
+
+function fallbackCopyCode(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        window.EFUtils.showAlert(`Class code "${text}" copied!`, 'success');
+    } catch (err) {
+        window.EFUtils.showAlert(`Copy failed. Code is: ${text}`, 'warning');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+// Initialize on page load
+checkAuth();
+
+// ==========================================
+// MAKE FUNCTIONS GLOBALLY ACCESSIBLE  
+// ==========================================
+window.showCreateClassModal = showCreateClassModal;
+window.closeCreateClassModal = closeCreateClassModal;
+window.createClass = createClass;
+window.selectClass = selectClass;
+window.backToClasses = backToClasses;
+window.showAddGoalModal = showAddGoalModal;
+window.closeAddGoalModal = closeAddGoalModal;
+window.addClassGoal = addClassGoal;
+window.toggleGoal = toggleGoal;
+window.exportClassData = exportClassData;
+window.copyClassCode = copyClassCode;
+window.logout = logout;
+window.showSignup = showSignup;
+window.showLogin = showLogin;
+window.login = login;
+window.signup = signup;
 
 // Initialize on page load
 checkAuth();
