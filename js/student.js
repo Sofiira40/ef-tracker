@@ -154,6 +154,171 @@ async function startAssessment() {
 }
 
 // ==========================================
+// SHARE WITH TEACHER
+// ==========================================
+
+function shareWithTeacher() {
+    const studentName = document.getElementById('studentName').value.trim();
+    const sessionInfo = window.EFUtils.getFromLocalStorage('current_session');
+    
+    if (!studentName) {
+        window.EFUtils.showAlert('Please enter your name so your teacher knows who this ID belongs to.', 'warning');
+        return;
+    }
+    
+    // Create email content
+    const subject = encodeURIComponent(`Student ID for ${sessionInfo.name}`);
+    const body = encodeURIComponent(`Hello,
+
+My name is ${studentName} and I've completed my Executive Functioning self-assessment.
+
+My anonymous ID is: ${currentToken}
+Class Code: ${sessionInfo.code}
+Class Name: ${sessionInfo.name}
+
+You can use this ID to track my progress in the teacher dashboard.
+
+Thank you!`);
+    
+    // Open default email client
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    
+    window.EFUtils.showAlert('Email template opened! Send it to your teacher.', 'success');
+}
+
+function copyTokenToClipboard() {
+    const tokenText = currentToken;
+    
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(tokenText).then(() => {
+            window.EFUtils.showAlert('ID copied to clipboard! You can paste it anywhere.', 'success');
+        }).catch(() => {
+            fallbackCopyToClipboard(tokenText);
+        });
+    } else {
+        fallbackCopyToClipboard(tokenText);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        window.EFUtils.showAlert('ID copied to clipboard!', 'success');
+    } catch (err) {
+        window.EFUtils.showAlert('Could not copy. Please write down your ID: ' + text, 'warning');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+// ==========================================
+// SENTENCE STARTERS & GOAL SUGGESTIONS
+// ==========================================
+
+function addSentenceStarter(textareaId, starter) {
+    const textarea = document.getElementById(textareaId);
+    if (textarea.value.trim() === '') {
+        textarea.value = starter + ' ';
+    }
+    textarea.focus();
+}
+
+// Generate goal suggestions based on scores
+function generateGoalSuggestions() {
+    const formData = new FormData(document.getElementById('assessmentForm'));
+    
+    const scores = {
+        task_initiation: parseInt(formData.get('task_initiation')) || 0,
+        working_memory: parseInt(formData.get('working_memory')) || 0,
+        planning: parseInt(formData.get('planning')) || 0,
+        organization: parseInt(formData.get('organization')) || 0,
+        time_management: parseInt(formData.get('time_management')) || 0,
+        self_monitoring: parseInt(formData.get('self_monitoring')) || 0,
+        emotional_regulation: parseInt(formData.get('emotional_regulation')) || 0,
+        flexibility: parseInt(formData.get('flexibility')) || 0
+    };
+    
+    const goalSuggestions = {
+        task_initiation: [
+            "Use the 2-minute rule: if it takes less than 2 minutes, do it right away",
+            "Set a timer for 5 minutes and just start - the hardest part is beginning!",
+            "Create a 'start ritual' - one small thing you do before starting work"
+        ],
+        working_memory: [
+            "Write down instructions as soon as I hear them",
+            "Use sticky notes or a small notebook to track what I need to remember",
+            "Repeat important information out loud or to myself"
+        ],
+        planning: [
+            "Break one big task into 3 smaller steps this week",
+            "Spend 2 minutes each morning planning my day",
+            "Use a checklist for tasks with multiple steps"
+        ],
+        organization: [
+            "Spend 5 minutes organizing my workspace at the end of each day",
+            "Create a 'home' for my most-used materials",
+            "Use color-coding or labels to stay organized"
+        ],
+        time_management: [
+            "Estimate how long tasks will take before I start them",
+            "Use a timer to stay aware of how much time is passing",
+            "Build in buffer time - add 5-10 minutes to my estimates"
+        ],
+        self_monitoring: [
+            "Pause halfway through tasks to check my work",
+            "Use a checklist to make sure I haven't missed anything",
+            "Ask myself 'Does this make sense?' as I work"
+        ],
+        emotional_regulation: [
+            "Take 3 deep breaths when I start feeling frustrated",
+            "Take a short break when I notice I'm getting upset",
+            "Have a calm-down strategy ready (walk, stretch, count to 10)"
+        ],
+        flexibility: [
+            "Remind myself that changes are okay and I can handle them",
+            "Have a 'Plan B' ready when things might change",
+            "Practice saying 'That's okay, I can adjust' when plans change"
+        ]
+    };
+    
+    // Find lowest 2 scores
+    const sortedSkills = Object.entries(scores).sort((a, b) => a[1] - b[1]).slice(0, 2);
+    
+    const suggestionsDiv = document.getElementById('goalSuggestions');
+    suggestionsDiv.innerHTML = '';
+    
+    sortedSkills.forEach(([skill, score]) => {
+        if (score > 0 && score < 4) {
+            const suggestions = goalSuggestions[skill];
+            suggestions.forEach(suggestion => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-outline';
+                btn.style.cssText = 'font-size: 0.85rem; padding: 6px 12px; margin: 3px;';
+                btn.textContent = suggestion;
+                btn.onclick = () => addSentenceStarter('weekly_goal', suggestion);
+                suggestionsDiv.appendChild(btn);
+            });
+        }
+    });
+}
+
+// Trigger goal suggestions when ratings change
+document.getElementById('assessmentForm')?.addEventListener('change', (e) => {
+    if (e.target.type === 'radio') {
+        generateGoalSuggestions();
+    }
+});
+
+// ==========================================
 // STEP 3: SUBMIT ASSESSMENT
 // ==========================================
 
@@ -218,6 +383,45 @@ function showCompletionScreen(data) {
     const scores = skills.map(skill => data[skill]);
     const avgScore = window.EFUtils.calculateAverage(scores);
     
+    // Get top 3 strengths and growth areas
+    const skillScores = skills.map(skill => ({
+        name: window.EFUtils.getSkillName(skill),
+        score: data[skill],
+        key: skill
+    }));
+    
+    skillScores.sort((a, b) => b.score - a.score);
+    const top3Strengths = skillScores.slice(0, 3);
+    const top3Growth = skillScores.slice(-3).reverse();
+    
+    // Display strengths and growth areas
+    const strengthsGrowthHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 25px; border-radius: var(--radius-lg);">
+                <h3 style="margin-bottom: 15px;">🌟 Your Top 3 Strengths</h3>
+                <ul style="list-style: none; padding: 0;">
+                    ${top3Strengths.map((s, i) => `
+                        <li style="padding: 8px 0; font-size: 1.1rem;">
+                            ${i + 1}. ${s.name} <span style="float: right; font-weight: bold;">${s.score}/5</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+            <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 25px; border-radius: var(--radius-lg);">
+                <h3 style="margin-bottom: 15px;">🎯 Your Top 3 Growth Areas</h3>
+                <ul style="list-style: none; padding: 0;">
+                    ${top3Growth.map((s, i) => `
+                        <li style="padding: 8px 0; font-size: 1.1rem;">
+                            ${i + 1}. ${s.name} <span style="float: right; font-weight: bold;">${s.score}/5</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('strengthsGrowthDisplay').innerHTML = strengthsGrowthHTML;
+    
     // Create summary cards
     const summaryHTML = `
         <div class="stat-card">
@@ -225,16 +429,12 @@ function showCompletionScreen(data) {
             <div class="stat-value" style="color: ${window.EFUtils.getScoreColor(avgScore)}">${avgScore}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Strongest Skill</div>
-            <div class="stat-value" style="font-size: 1.5rem;">${getStrongestSkill(data, skills)}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Growth Area</div>
-            <div class="stat-value" style="font-size: 1.5rem;">${getWeakestSkill(data, skills)}</div>
-        </div>
-        <div class="stat-card">
             <div class="stat-label">Assessments Completed</div>
             <div class="stat-value">${(window.EFUtils.getFromLocalStorage('my_assessments') || []).length}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Your Token</div>
+            <div class="stat-value" style="font-size: 1.5rem; font-family: monospace;">${currentToken}</div>
         </div>
     `;
     
@@ -300,7 +500,15 @@ async function viewMyProgress() {
 }
 
 function createProgressChart(assessments) {
-    const ctx = document.getElementById('progressChart').getContext('2d');
+    const ctx = document.getElementById('progressChart');
+    if (!ctx) return;
+    
+    const chartContext = ctx.getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (window.studentProgressChart) {
+        window.studentProgressChart.destroy();
+    }
     
     // Prepare data
     const dates = assessments.map(a => a.assessment_date);
@@ -318,7 +526,7 @@ function createProgressChart(assessments) {
         };
     });
     
-    new Chart(ctx, {
+    window.studentProgressChart = new Chart(chartContext, {
         type: 'line',
         data: {
             labels: dates,

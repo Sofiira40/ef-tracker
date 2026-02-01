@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>🎓 Student Self-Assessment</h1>
-            <p class="subtitle">Reflect on your executive functioning skills</p>
+            <p class="subtitle">Reflect on your skills this week</p>
             <a href="index.html" class="btn btn-outline" style="max-width: 200px; margin: 10px auto;">← Back to Home</a>
         </header>
 
@@ -44,6 +44,20 @@
                         📝 Write this down! You'll need it to see your progress later.
                     </p>
                 </div>
+                
+                <!-- Share with Teacher -->
+                <div style="margin-top: 20px; padding: 20px; background: var(--bg-light); border-radius: var(--radius-md);">
+                    <h3 style="margin-bottom: 10px;">Share Your ID with Your Teacher</h3>
+                    <p style="color: var(--text-light); margin-bottom: 15px;">Your teacher needs your anonymous ID to track your progress. You can share it in two ways:</p>
+                    
+                    <div class="form-group">
+                        <label for="studentName">Your Name (optional - only for sharing with teacher):</label>
+                        <input type="text" id="studentName" placeholder="Your name">
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="shareWithTeacher()">📧 Email My Teacher</button>
+                    <button class="btn btn-outline" onclick="copyTokenToClipboard()">📋 Copy ID to Clipboard</button>
+                </div>
             </div>
             
             <div id="returningTokenSection" class="hidden">
@@ -63,14 +77,22 @@
         <!-- Step 3: Assessment Form -->
         <div id="step-assessment" class="assessment-step hidden">
             <form id="assessmentForm">
-                <h2>Executive Functioning Skills Self-Assessment</h2>
+                <h2>How Are You Doing This Week?</h2>
                 <p style="color: var(--text-light); margin-bottom: 30px;">
-                    Rate how you've been doing with each skill this week (1 = struggling, 5 = doing great)
+                    Think about how things have been going for you this week. Rate yourself honestly - there are no right or wrong answers!
                 </p>
 
-                <!-- Task Initiation -->
+                <!-- Question 1: Task Initiation -->
                 <div class="scale-group">
-                    <div class="scale-question">1. Task Initiation: Starting tasks without procrastinating</div>
+                    <div class="scale-question">
+                        1. Getting Started 
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about how easily you begin tasks without putting them off</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How easy has it been for you to start your work or tasks without procrastinating?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="task_initiation" id="ti1" value="1" required>
@@ -94,14 +116,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Working Memory -->
+                <!-- Question 2: Working Memory -->
                 <div class="scale-group">
-                    <div class="scale-question">2. Working Memory: Remembering instructions and information</div>
+                    <div class="scale-question">
+                        2. Remembering Instructions
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about holding information in your mind while you work</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to remember instructions and keep track of what you need to do?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="working_memory" id="wm1" value="1" required>
@@ -125,14 +155,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Planning -->
+                <!-- Question 3: Planning -->
                 <div class="scale-group">
-                    <div class="scale-question">3. Planning: Breaking tasks into steps and making plans</div>
+                    <div class="scale-question">
+                        3. Making Plans
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about thinking ahead and breaking big tasks into steps</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to think ahead and break tasks down into smaller steps?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="planning" id="pl1" value="1" required>
@@ -156,14 +194,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Organization -->
+                <!-- Question 4: Organization -->
                 <div class="scale-group">
-                    <div class="scale-question">4. Organization: Keeping materials and workspace organized</div>
+                    <div class="scale-question">
+                        4. Staying Organized
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about keeping your materials and space organized</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you kept your materials, workspace, and belongings organized?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="organization" id="org1" value="1" required>
@@ -187,14 +233,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Time Management -->
+                <!-- Question 5: Time Management -->
                 <div class="scale-group">
-                    <div class="scale-question">5. Time Management: Estimating time and meeting deadlines</div>
+                    <div class="scale-question">
+                        5. Managing Your Time
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about estimating how long things take and meeting deadlines</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to estimate how long tasks take and finish things on time?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="time_management" id="tm1" value="1" required>
@@ -218,14 +272,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Self-Monitoring -->
+                <!-- Question 6: Self-Monitoring -->
                 <div class="scale-group">
-                    <div class="scale-question">6. Self-Monitoring: Checking your own work and progress</div>
+                    <div class="scale-question">
+                        6. Checking Your Work
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about noticing mistakes and tracking your own progress</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to check your work and notice when you make mistakes?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="self_monitoring" id="sm1" value="1" required>
@@ -249,14 +311,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Emotional Regulation -->
+                <!-- Question 7: Emotional Regulation -->
                 <div class="scale-group">
-                    <div class="scale-question">7. Emotional Regulation: Managing frustration and emotions</div>
+                    <div class="scale-question">
+                        7. Managing Your Feelings
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about staying calm when things are frustrating or stressful</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to stay calm and manage frustration or stress?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="emotional_regulation" id="er1" value="1" required>
@@ -280,14 +350,22 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
-                <!-- Flexibility -->
+                <!-- Question 8: Flexibility -->
                 <div class="scale-group">
-                    <div class="scale-question">8. Flexibility: Adapting when plans change</div>
+                    <div class="scale-question">
+                        8. Handling Changes
+                        <span class="tooltip">ⓘ
+                            <span class="tooltiptext">This is about adapting when plans change or things don't go as expected</span>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin: 10px 0;">
+                        How well have you been able to adapt when plans change or things don't go the way you expected?
+                    </p>
                     <div class="scale-options">
                         <div class="scale-option">
                             <input type="radio" name="flexibility" id="flex1" value="1" required>
@@ -311,34 +389,56 @@
                         </div>
                     </div>
                     <div class="scale-labels">
-                        <span>Really struggling</span>
-                        <span>Doing great!</span>
+                        <span>Very difficult</span>
+                        <span>Pretty easy!</span>
                     </div>
                 </div>
 
                 <!-- Reflection Questions -->
-                <h3 style="margin-top: 40px;">Reflection Questions</h3>
+                <h3 style="margin-top: 40px;">Reflect on Your Week</h3>
                 
                 <div class="form-group">
                     <label for="what_went_well">What went well this week?</label>
-                    <textarea id="what_went_well" name="what_went_well" placeholder="Think about moments you're proud of..."></textarea>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">Choose a sentence starter or write your own:</p>
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_went_well', 'I was proud of myself when...')">I was proud of myself when...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_went_well', 'Something that went really well was...')">Something that went really well was...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_went_well', 'I felt successful when...')">I felt successful when...</button>
+                    </div>
+                    <textarea id="what_went_well" name="what_went_well" placeholder="Share what you're proud of this week..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="what_was_challenging">What was challenging this week?</label>
-                    <textarea id="what_was_challenging" name="what_was_challenging" placeholder="It's okay to share struggles..."></textarea>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">Choose a sentence starter or write your own:</p>
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_was_challenging', 'I found it difficult when...')">I found it difficult when...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_was_challenging', 'Something I struggled with was...')">Something I struggled with was...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('what_was_challenging', 'A challenge I faced was...')">A challenge I faced was...</button>
+                    </div>
+                    <textarea id="what_was_challenging" name="what_was_challenging" placeholder="It's okay to share struggles - they help us grow..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="support_needed">What support would help you?</label>
-                    <textarea id="support_needed" name="support_needed" placeholder="What could make things easier?"></textarea>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">Choose a sentence starter or write your own:</p>
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('support_needed', 'It would help me if...')">It would help me if...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('support_needed', 'I could use support with...')">I could use support with...</button>
+                        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px; margin: 3px;" onclick="addSentenceStarter('support_needed', 'What I need is...')">What I need is...</button>
+                    </div>
+                    <textarea id="support_needed" name="support_needed" placeholder="What could make things easier for you?"></textarea>
                 </div>
 
                 <!-- Goal Setting -->
-                <h3 style="margin-top: 40px;">This Week's Goal</h3>
+                <h3 style="margin-top: 40px;">Set Your Goal</h3>
                 
                 <div class="form-group">
                     <label for="weekly_goal">What's one thing you want to work on this week?</label>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">Need ideas? Click a suggestion or write your own:</p>
+                    <div id="goalSuggestions" style="margin-bottom: 10px;">
+                        <!-- Will be populated based on lowest scores -->
+                    </div>
                     <textarea id="weekly_goal" name="weekly_goal" placeholder="Set a small, achievable goal..."></textarea>
                 </div>
 
@@ -386,6 +486,10 @@
                 </div>
             </div>
 
+            <div id="strengthsGrowthDisplay" style="margin: 30px 0;">
+                <!-- Top 3 strengths and growth areas -->
+            </div>
+
             <div class="dashboard-grid" id="skillsSummary">
                 <!-- Will be populated by JavaScript -->
             </div>
@@ -394,6 +498,7 @@
                 <button class="btn btn-primary" onclick="viewMyProgress()">View My Progress Over Time</button>
                 <button class="btn btn-secondary" onclick="downloadMyData()">Download My Data</button>
                 <button class="btn btn-outline" onclick="window.location.reload()">Take Another Assessment</button>
+                <a href="index.html" class="btn btn-outline">← Back to Home</a>
             </div>
         </div>
 
@@ -403,7 +508,8 @@
             <div class="chart-container">
                 <canvas id="progressChart"></canvas>
             </div>
-            <button class="btn btn-outline" onclick="hideProgress()">Back to Assessment</button>
+            <button class="btn btn-outline" onclick="hideProgress()">Back to Results</button>
+            <a href="index.html" class="btn btn-outline">← Back to Home</a>
         </div>
     </div>
 

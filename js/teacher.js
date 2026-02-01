@@ -5,6 +5,8 @@
 // Global state
 let currentUser = null;
 let currentClass = null;
+let classSkillsChart = null;
+let studentTrendsChart = null;
 
 // ==========================================
 // AUTHENTICATION
@@ -22,6 +24,13 @@ async function checkAuth() {
 async function login() {
     const email = document.getElementById('teacherEmail').value;
     const password = document.getElementById('teacherPassword').value;
+    
+    if (!email || !password) {
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = 'Please enter both email and password';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
     
     const { data, error } = await window.EFUtils.supabaseClient.auth.signInWithPassword({
         email: email,
@@ -42,6 +51,13 @@ async function login() {
 async function signup() {
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
+    
+    if (!email || !password) {
+        const errorDiv = document.getElementById('signupError');
+        errorDiv.textContent = 'Please enter both email and password';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
     
     if (password.length < 6) {
         const errorDiv = document.getElementById('signupError');
@@ -123,7 +139,7 @@ async function loadClasses() {
     }
     
     classList.innerHTML = data.map(cls => `
-        <div class="portal-card" onclick="selectClass('${cls.id}')">
+        <div class="portal-card" onclick="selectClass('${cls.id}')" style="cursor: pointer;">
             <h3>${cls.class_name}</h3>
             <p>Code: <strong>${cls.class_code}</strong></p>
             <p>Grade ${cls.grade_level || 'N/A'}</p>
@@ -178,6 +194,11 @@ async function createClass() {
     
     window.EFUtils.showAlert(`Class created! Share code "${classCode}" with your students.`, 'success');
     closeCreateClassModal();
+    
+    // Clear form
+    document.getElementById('newClassName').value = '';
+    document.getElementById('newClassGrade').value = '';
+    
     loadClasses();
 }
 
@@ -198,7 +219,8 @@ async function selectClass(classId) {
     if (!classData) return;
     
     // Hide class list, show class view
-    document.getElementById('classList').parentElement.classList.add('hidden');
+    const classListParent = document.getElementById('classList').parentElement;
+    classListParent.style.display = 'none';
     document.getElementById('classView').classList.remove('hidden');
     
     // Update header
@@ -211,8 +233,19 @@ async function selectClass(classId) {
 
 function backToClasses() {
     document.getElementById('classView').classList.add('hidden');
-    document.getElementById('classList').parentElement.classList.remove('hidden');
+    const classListParent = document.getElementById('classList').parentElement;
+    classListParent.style.display = 'block';
     currentClass = null;
+    
+    // Destroy charts
+    if (classSkillsChart) {
+        classSkillsChart.destroy();
+        classSkillsChart = null;
+    }
+    if (studentTrendsChart) {
+        studentTrendsChart.destroy();
+        studentTrendsChart = null;
+    }
 }
 
 async function loadClassAnalytics(classId) {
@@ -224,7 +257,7 @@ async function loadClassAnalytics(classId) {
     
     if (!tokens || tokens.length === 0) {
         document.getElementById('studentCount').textContent = '0';
-        window.EFUtils.showAlert('No student data yet for this class', 'info');
+        document.getElementById('classStats').innerHTML = '<p>No student data yet for this class. Students will appear here once they complete their first assessment.</p>';
         return;
     }
     
@@ -240,7 +273,7 @@ async function loadClassAnalytics(classId) {
         .order('assessment_date', { ascending: true });
     
     if (!assessments || assessments.length === 0) {
-        window.EFUtils.showAlert('No assessments completed yet', 'info');
+        document.getElementById('classStats').innerHTML = '<p>No assessments completed yet. Encourage students to complete their first self-assessment!</p>';
         return;
     }
     
@@ -288,6 +321,9 @@ function displayClassStats(assessments) {
         }
     });
     
+    const uniqueStudents = new Set(assessments.map(a => a.token_id)).size;
+    const participationRate = Math.round((uniqueStudents / document.getElementById('studentCount').textContent) * 100);
+    
     const statsHTML = `
         <div class="stat-card">
             <div class="stat-label">Class Average</div>
@@ -302,8 +338,8 @@ function displayClassStats(assessments) {
             <div class="stat-value" style="font-size: 1.3rem;">${mostImprovedSkill || 'N/A'}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Participation Rate</div>
-            <div class="stat-value">${Math.round((assessments.length / document.getElementById('studentCount').textContent) * 100)}%</div>
+            <div class="stat-label">Participation</div>
+            <div class="stat-value">${participationRate}%</div>
         </div>
     `;
     
@@ -311,7 +347,15 @@ function displayClassStats(assessments) {
 }
 
 function displayClassSkillsChart(assessments) {
-    const ctx = document.getElementById('classSkillsChart').getContext('2d');
+    const canvas = document.getElementById('classSkillsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy existing chart
+    if (classSkillsChart) {
+        classSkillsChart.destroy();
+    }
     
     const skills = ['task_initiation', 'working_memory', 'planning', 'organization',
                     'time_management', 'self_monitoring', 'emotional_regulation', 'flexibility'];
@@ -321,7 +365,7 @@ function displayClassSkillsChart(assessments) {
         return window.EFUtils.calculateAverage(scores);
     });
     
-    new Chart(ctx, {
+    classSkillsChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: skills.map(s => window.EFUtils.getSkillName(s)),
@@ -346,11 +390,20 @@ function displayClassSkillsChart(assessments) {
 }
 
 function displayStudentTrends(assessments, tokens) {
-    const ctx = document.getElementById('studentTrendsChart').getContext('2d');
+    const canvas = document.getElementById('studentTrendsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy existing chart
+    if (studentTrendsChart) {
+        studentTrendsChart.destroy();
+    }
     
     // Group by token
     const datasets = tokens.slice(0, 5).map((token, index) => {
         const tokenAssessments = assessments.filter(a => a.token_id === token.id);
+        const dates = tokenAssessments.map(a => a.assessment_date);
         const avgScores = tokenAssessments.map(a => {
             const skills = ['task_initiation', 'working_memory', 'planning', 'organization',
                             'time_management', 'self_monitoring', 'emotional_regulation', 'flexibility'];
@@ -369,12 +422,12 @@ function displayStudentTrends(assessments, tokens) {
         };
     });
     
-    const dates = [...new Set(assessments.map(a => a.assessment_date))].sort();
+    const allDates = [...new Set(assessments.map(a => a.assessment_date))].sort();
     
-    new Chart(ctx, {
+    studentTrendsChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: allDates,
             datasets: datasets
         },
         options: {
@@ -393,6 +446,8 @@ function displayReflections(assessments, tokens) {
     const recent = assessments.slice(-10).reverse();
     
     const tbody = document.querySelector('#reflectionsTable tbody');
+    if (!tbody) return;
+    
     tbody.innerHTML = recent.map(a => {
         const token = tokens.find(t => t.id === a.token_id);
         return `
@@ -447,6 +502,12 @@ async function addClassGoal() {
     
     window.EFUtils.showAlert('Goal added!', 'success');
     closeAddGoalModal();
+    
+    // Clear form
+    document.getElementById('goalText').value = '';
+    document.getElementById('goalSkill').value = '';
+    document.getElementById('goalDate').value = '';
+    
     loadClassGoals();
 }
 
@@ -458,6 +519,7 @@ async function loadClassGoals() {
         .order('created_at', { ascending: false });
     
     const goalsDiv = document.getElementById('classGoalsList');
+    if (!goalsDiv) return;
     
     if (!data || data.length === 0) {
         goalsDiv.innerHTML = '<p style="color: var(--text-light); margin-top: 20px;">No class goals yet.</p>';
@@ -465,15 +527,14 @@ async function loadClassGoals() {
     }
     
     goalsDiv.innerHTML = data.map(goal => `
-        <div class="alert ${goal.achieved ? 'alert-success' : 'alert-info'}" style="margin-top: 15px;">
+        <div class="alert ${goal.achieved ? 'alert-success' : 'alert-info'}" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <strong>${goal.goal_text}</strong>
                 ${goal.focus_skill ? `<p style="margin: 5px 0;">Focus: ${window.EFUtils.getSkillName(goal.focus_skill)}</p>` : ''}
                 ${goal.target_date ? `<p style="margin: 5px 0;">Target: ${new Date(goal.target_date).toLocaleDateString()}</p>` : ''}
             </div>
             <button class="btn ${goal.achieved ? 'btn-outline' : 'btn-secondary'}" 
-                    onclick="toggleGoal('${goal.id}', ${!goal.achieved})" 
-                    style="margin-left: auto;">
+                    onclick="toggleGoal('${goal.id}', ${!goal.achieved})">
                 ${goal.achieved ? '✓ Achieved' : 'Mark Complete'}
             </button>
         </div>
@@ -500,12 +561,22 @@ async function exportClassData() {
         .select('id, token')
         .eq('session_id', currentClass);
     
+    if (!tokens || tokens.length === 0) {
+        window.EFUtils.showAlert('No student data to export', 'warning');
+        return;
+    }
+    
     const tokenIds = tokens.map(t => t.id);
     
     const { data: assessments } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
         .select('*')
         .in('token_id', tokenIds);
+    
+    if (!assessments || assessments.length === 0) {
+        window.EFUtils.showAlert('No assessments to export', 'warning');
+        return;
+    }
     
     // Prepare CSV data
     const csvData = assessments.map(a => {
