@@ -2,23 +2,18 @@
 // SHARED UTILITIES & SUPABASE CONFIGURATION
 // ==========================================
 
-// IMPORTANT: Replace these with YOUR Supabase credentials
-
-const SUPABASE_URL = 'https://dtpeatubjszwxwxgahuc.supabase.co';
+const SUPABASE_URL = 'https://dtpeatubjszwxwxgahuc.supabase.co'; 
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0cGVhdHVianN6d3h3eGdhaHVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyOTIwNjEsImV4cCI6MjA4NDg2ODA2MX0.EWp2gcXEeiI7AzCDGVCw2fHKnztiKk96PP1nvlMFhNY';
 
 // Initialize Supabase client
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// The global 'supabase' object comes from the CDN script loaded in HTML
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
 
-/**
- * Generate a random token (4 characters: 2 letters + 2 numbers)
- * Example: AB12, XY89
- */
 function generateToken() {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '0123456789';
@@ -32,9 +27,6 @@ function generateToken() {
     return token;
 }
 
-/**
- * Save data to localStorage
- */
 function saveToLocalStorage(key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value));
@@ -45,9 +37,6 @@ function saveToLocalStorage(key, value) {
     }
 }
 
-/**
- * Get data from localStorage
- */
 function getFromLocalStorage(key) {
     try {
         const item = localStorage.getItem(key);
@@ -58,9 +47,6 @@ function getFromLocalStorage(key) {
     }
 }
 
-/**
- * Format date as YYYY-MM-DD
- */
 function formatDate(date) {
     const d = date || new Date();
     const year = d.getFullYear();
@@ -69,18 +55,12 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
-/**
- * Calculate average of an array
- */
 function calculateAverage(arr) {
     if (!arr || arr.length === 0) return 0;
     const sum = arr.reduce((a, b) => a + b, 0);
     return (sum / arr.length).toFixed(1);
 }
 
-/**
- * Get skill name from database column
- */
 function getSkillName(column) {
     const skillNames = {
         'task_initiation': 'Task Initiation',
@@ -95,19 +75,13 @@ function getSkillName(column) {
     return skillNames[column] || column;
 }
 
-/**
- * Get color based on score (1-5)
- */
 function getScoreColor(score) {
-    if (score >= 4.5) return '#10B981'; // Green
-    if (score >= 3.5) return '#F59E0B'; // Yellow
-    if (score >= 2.5) return '#F97316'; // Orange
-    return '#EF4444'; // Red
+    if (score >= 4.5) return '#10B981';
+    if (score >= 3.5) return '#F59E0B';
+    if (score >= 2.5) return '#F97316';
+    return '#EF4444';
 }
 
-/**
- * Show alert message
- */
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
@@ -116,27 +90,25 @@ function showAlert(message, type = 'info') {
         <div>${message}</div>
     `;
     
-    // Insert at top of container
     const container = document.querySelector('.container');
-    const header = container.querySelector('header');
-    header.after(alertDiv);
+    if (container) {
+        const header = container.querySelector('header');
+        if (header) {
+            header.after(alertDiv);
+        } else {
+            container.prepend(alertDiv);
+        }
+    }
     
-    // Auto-remove after 5 seconds
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
 }
 
-/**
- * Show loading spinner
- */
 function showLoading(element) {
     element.innerHTML = '<div class="spinner"></div>';
 }
 
-/**
- * Download data as JSON file
- */
 function downloadJSON(data, filename) {
     const dataStr = JSON.stringify(data, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -151,24 +123,17 @@ function downloadJSON(data, filename) {
     URL.revokeObjectURL(url);
 }
 
-/**
- * Download data as CSV file
- */
 function downloadCSV(data, filename, headers) {
-    // Create CSV header
     let csv = headers.join(',') + '\n';
     
-    // Add data rows
     data.forEach(row => {
         const values = headers.map(header => {
             const value = row[header] || '';
-            // Escape commas and quotes
             return `"${String(value).replace(/"/g, '""')}"`;
         });
         csv += values.join(',') + '\n';
     });
     
-    // Create download
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     
@@ -182,19 +147,23 @@ function downloadCSV(data, filename, headers) {
 }
 
 // ==========================================
-// EXPORT FOR USE IN OTHER FILES
+// EXPORT - Make everything globally available
 // ==========================================
 window.EFUtils = {
-    supabase,
-    generateToken,
-    saveToLocalStorage,
-    getFromLocalStorage,
-    formatDate,
-    calculateAverage,
-    getSkillName,
-    getScoreColor,
-    showAlert,
-    showLoading,
-    downloadJSON,
-    downloadCSV
+    supabaseClient: supabaseClient,
+    generateToken: generateToken,
+    saveToLocalStorage: saveToLocalStorage,
+    getFromLocalStorage: getFromLocalStorage,
+    formatDate: formatDate,
+    calculateAverage: calculateAverage,
+    getSkillName: getSkillName,
+    getScoreColor: getScoreColor,
+    showAlert: showAlert,
+    showLoading: showLoading,
+    downloadJSON: downloadJSON,
+    downloadCSV: downloadCSV
 };
+
+// Debug: Log to console to verify it loaded
+console.log('✅ EFUtils loaded successfully');
+console.log('Supabase client initialized:', supabaseClient ? 'YES' : 'NO');
