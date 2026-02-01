@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Check if this is an auth callback from Supabase
+        if (window.location.hash && 
+            (window.location.hash.includes('access_token') || 
+             window.location.hash.includes('error'))) {
+            
+            console.log('Auth redirect detected, forwarding to ef-tracker...');
+            // Redirect to ef-tracker teacher dashboard with the hash
+            window.location.href = 'https://sofiira40.github.io/ef-tracker/teacher.html' + window.location.hash;
+        } else {
+            // Regular visit - show your personal page or redirect to ef-tracker
+            window.location.href = 'https://sofiira40.github.io/ef-tracker/';
+        }
+    </script>
+</head>
+<body>
+    <p style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+        Redirecting...
+    </p>
+</body>
+</html>
