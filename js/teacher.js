@@ -654,8 +654,7 @@ function fallbackCopyCode(text) {
     document.body.removeChild(textarea);
 }
 
-// Initialize on page load
-checkAuth();
+
 
 // ==========================================
 // MAKE FUNCTIONS GLOBALLY ACCESSIBLE  

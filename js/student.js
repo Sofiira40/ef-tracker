@@ -11,7 +11,7 @@ let currentTokenId = null;
 // STEP 1: CLASS CODE VALIDATION
 // ==========================================
 
-async function validateClassCode() {
+window.validateClassCode = async function() {
     const classCodeInput = document.getElementById('classCodeInput');
     const classCode = classCodeInput.value.trim().toUpperCase();
     
@@ -47,7 +47,7 @@ async function validateClassCode() {
     
     // Check if student has used this app before
     checkForExistingToken();
-}
+};
 
 // ==========================================
 // STEP 2: TOKEN MANAGEMENT
@@ -98,7 +98,7 @@ async function createNewToken() {
     document.getElementById('displayToken').textContent = token;
 }
 
-function toggleReturningStudent() {
+window.toggleReturningStudent = function() {
     const newSection = document.getElementById('newTokenSection');
     const returningSection = document.getElementById('returningTokenSection');
     
@@ -109,9 +109,9 @@ function toggleReturningStudent() {
         newSection.classList.add('hidden');
         returningSection.classList.remove('hidden');
     }
-}
+};
 
-async function startAssessment() {
+window.startAssessment = async function() {
     // If returning student, validate their token
     if (!document.getElementById('newTokenSection').classList.contains('hidden')) {
         // New student - already have token
@@ -151,13 +151,13 @@ async function startAssessment() {
     // Show assessment form
     document.getElementById('step-token').classList.add('hidden');
     document.getElementById('step-assessment').classList.remove('hidden');
-}
+};
 
 // ==========================================
 // SHARE WITH TEACHER
 // ==========================================
 
-function shareWithTeacher() {
+window.shareWithTeacher = function() {
     const studentName = document.getElementById('studentName').value.trim();
     const sessionInfo = window.EFUtils.getFromLocalStorage('current_session');
     
@@ -184,9 +184,9 @@ Thank you!`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     
     window.EFUtils.showAlert('Email template opened! Send it to your teacher.', 'success');
-}
+};
 
-function copyTokenToClipboard() {
+window.copyTokenToClipboard = function() {
     const tokenText = currentToken;
     
     // Modern clipboard API
@@ -199,7 +199,7 @@ function copyTokenToClipboard() {
     } else {
         fallbackCopyToClipboard(tokenText);
     }
-}
+};
 
 function fallbackCopyToClipboard(text) {
     const textarea = document.createElement('textarea');
@@ -223,13 +223,13 @@ function fallbackCopyToClipboard(text) {
 // SENTENCE STARTERS & GOAL SUGGESTIONS
 // ==========================================
 
-function addSentenceStarter(textareaId, starter) {
+window.addSentenceStarter = function(textareaId, starter) {
     const textarea = document.getElementById(textareaId);
     if (textarea.value.trim() === '') {
         textarea.value = starter + ' ';
     }
     textarea.focus();
-}
+};
 
 // Generate goal suggestions based on scores
 function generateGoalSuggestions() {
@@ -304,7 +304,7 @@ function generateGoalSuggestions() {
                 btn.className = 'btn btn-outline';
                 btn.style.cssText = 'font-size: 0.85rem; padding: 6px 12px; margin: 3px;';
                 btn.textContent = suggestion;
-                btn.onclick = () => addSentenceStarter('weekly_goal', suggestion);
+                btn.onclick = () => window.addSentenceStarter('weekly_goal', suggestion);
                 suggestionsDiv.appendChild(btn);
             });
         }
@@ -441,39 +441,11 @@ function showCompletionScreen(data) {
     document.getElementById('skillsSummary').innerHTML = summaryHTML;
 }
 
-function getStrongestSkill(data, skills) {
-    let maxScore = 0;
-    let strongestSkill = '';
-    
-    skills.forEach(skill => {
-        if (data[skill] > maxScore) {
-            maxScore = data[skill];
-            strongestSkill = window.EFUtils.getSkillName(skill);
-        }
-    });
-    
-    return strongestSkill;
-}
-
-function getWeakestSkill(data, skills) {
-    let minScore = 6;
-    let weakestSkill = '';
-    
-    skills.forEach(skill => {
-        if (data[skill] < minScore) {
-            minScore = data[skill];
-            weakestSkill = window.EFUtils.getSkillName(skill);
-        }
-    });
-    
-    return weakestSkill;
-}
-
 // ==========================================
 // PROGRESS TRACKING
 // ==========================================
 
-async function viewMyProgress() {
+window.viewMyProgress = async function() {
     document.getElementById('step-complete').classList.add('hidden');
     document.getElementById('progressDashboard').classList.remove('hidden');
     
@@ -497,7 +469,7 @@ async function viewMyProgress() {
     
     // Create progress chart
     createProgressChart(data);
-}
+};
 
 function createProgressChart(assessments) {
     const ctx = document.getElementById('progressChart');
@@ -564,16 +536,16 @@ function createProgressChart(assessments) {
     });
 }
 
-function hideProgress() {
+window.hideProgress = function() {
     document.getElementById('progressDashboard').classList.add('hidden');
     document.getElementById('step-complete').classList.remove('hidden');
-}
+};
 
 // ==========================================
 // DATA EXPORT
 // ==========================================
 
-async function downloadMyData() {
+window.downloadMyData = async function() {
     // Fetch all data for this token
     const { data, error } = await window.EFUtils.supabaseClient
         .from('ef_assessments')
@@ -598,17 +570,6 @@ async function downloadMyData() {
     
     window.EFUtils.downloadJSON(exportData, `EF-Progress-${currentToken}`);
     window.EFUtils.showAlert('Your data has been downloaded! Keep it safe.', 'success');
-}
+};
 
-// ==========================================
-// MAKE FUNCTIONS GLOBALLY ACCESSIBLE
-// ==========================================
-window.validateClassCode = validateClassCode;
-window.toggleReturningStudent = toggleReturningStudent;
-window.startAssessment = startAssessment;
-window.shareWithTeacher = shareWithTeacher;
-window.copyTokenToClipboard = copyTokenToClipboard;
-window.addSentenceStarter = addSentenceStarter;
-window.viewMyProgress = viewMyProgress;
-window.hideProgress = hideProgress;
-window.downloadMyData = downloadMyData;
+console.log('✅ Student.js loaded - all functions are globally accessible');
